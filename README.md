@@ -1,6 +1,6 @@
 # RAG Knowledge Assistant
 
-A production-grade Retrieval-Augmented Generation (RAG) knowledge assistant with multi-LLM support, document processing, conversation memory, web search integration, and AWS deployment.
+A production-ready Retrieval-Augmented Generation (RAG) assistant featuring multi-LLM support, document ingestion and processing, conversational memory, web search integration, and optional AWS deployment.
 
 ## Interface Previews
 
