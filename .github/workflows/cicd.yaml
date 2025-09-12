@@ -1,134 +1,134 @@
-name: Multi-Mode RAG Chatbot CI/CD
+# name: Multi-Mode RAG Chatbot CI/CD
 
-on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'README.md'
-  pull_request:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths-ignore:
+#       - 'README.md'
+#   pull_request:
+#     branches:
+#       - main
 
-permissions:
-  id-token: write
-  contents: read
+# permissions:
+#   id-token: write
+#   contents: read
 
-jobs:
-  integration:
-    name: Continuous Integration
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+# jobs:
+#   integration:
+#     name: Continuous Integration
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-          cache: 'pip'
+#       - name: Setup Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.12'
+#           cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest
-          pip install -r requirements.txt
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install flake8 pytest
+#           pip install -r requirements.txt
 
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#       - name: Lint with flake8
+#         run: |
+#           # stop the build if there are Python syntax errors or undefined names
+#           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#           # exit-zero treats all errors as warnings
+#           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Test with pytest
-        run: |
-          pytest -xvs tests/ || echo "No tests found, continuing workflow"
+#       - name: Test with pytest
+#         run: |
+#           pytest -xvs tests/ || echo "No tests found, continuing workflow"
 
-  build-and-push-ecr-image:
-    name: Continuous Delivery
-    needs: integration
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+#   build-and-push-ecr-image:
+#     name: Continuous Delivery
+#     needs: integration
+#     runs-on: ubuntu-latest
+#     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
 
-      - name: Install Utilities
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq unzip
+#       - name: Install Utilities
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y jq unzip
       
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+#       - name: Build, tag, and push image to Amazon ECR
+#         id: build-image
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+#           IMAGE_TAG: ${{ github.sha }}
+#         run: |
+#           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+#           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
 
-  continuous-deployment:
-    name: Continuous Deployment
-    needs: build-and-push-ecr-image
-    runs-on: self-hosted
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+#   continuous-deployment:
+#     name: Continuous Deployment
+#     needs: build-and-push-ecr-image
+#     runs-on: self-hosted
+#     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Pull latest images
-        run: |
-          docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+#       - name: Pull latest images
+#         run: |
+#           docker pull ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
-      - name: Stop and remove container if running
-        run: |
-          docker ps -q --filter "name=rag_chatbot" | grep -q . && docker stop rag_chatbot && docker rm -fv rag_chatbot || echo "No existing container found"
+#       - name: Stop and remove container if running
+#         run: |
+#           docker ps -q --filter "name=rag_chatbot" | grep -q . && docker stop rag_chatbot && docker rm -fv rag_chatbot || echo "No existing container found"
 
-      - name: Run Docker Image to serve users
-        run: |
-          docker run -d -p 8501:8501 -p 8080:8080 --name rag_chatbot --restart unless-stopped \
-          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
-          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
-          -e 'AWS_REGION=${{ secrets.AWS_REGION }}' \
-          -e 'MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}' \
-          ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+#       - name: Run Docker Image to serve users
+#         run: |
+#           docker run -d -p 8501:8501 -p 8080:8080 --name rag_chatbot --restart unless-stopped \
+#           -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
+#           -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
+#           -e 'AWS_REGION=${{ secrets.AWS_REGION }}' \
+#           -e 'MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}' \
+#           ${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
-      - name: Health check
-        run: |
-          sleep 15
-          echo "Checking Streamlit UI..."
-          curl -s -o /dev/null -w "%{http_code}" http://localhost:8501 | grep -q "200" && echo "UI is running" || echo "UI may still be starting up, check logs"
-          echo "Checking FastAPI backend..."
-          curl -s http://localhost:8080/health | grep -q "healthy" && echo "API is healthy" || echo "API health check failed"
+#       - name: Health check
+#         run: |
+#           sleep 15
+#           echo "Checking Streamlit UI..."
+#           curl -s -o /dev/null -w "%{http_code}" http://localhost:8501 | grep -q "200" && echo "UI is running" || echo "UI may still be starting up, check logs"
+#           echo "Checking FastAPI backend..."
+#           curl -s http://localhost:8080/health | grep -q "healthy" && echo "API is healthy" || echo "API health check failed"
 
-      - name: Clean previous images and containers
-        run: |
-          docker system prune -f
+#       - name: Clean previous images and containers
+#         run: |
+#           docker system prune -f
