@@ -20,7 +20,7 @@ A production-grade Retrieval-Augmented Generation (RAG) knowledge assistant with
 ## Project Structure
 
 ```
-rag_app_level3/
+rag-knowledge-assistant
 ├── api/                  # FastAPI backend
 │   ├── main.py           # Main API entry point
 │   ├── middleware/       # API middleware
@@ -56,8 +56,8 @@ rag_app_level3/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/hafizshakeel/rag_chatbot.git
-cd rag_chatbot
+git clone https://github.com/hafizshakeel/rag-knowledge-assistant-using-llm-langchain.git
+cd rag-knowledge-assistant-using-llm-langchain
 ```
 
 2. Create a virtual environment:
@@ -110,22 +110,6 @@ python run.py --frontend-only # Run only the UI
 ## API Documentation
 
 API documentation is available at http://localhost:8080/docs when the server is running.
-
-## Environment Variables
-
-Create a `.env` file with the following variables:
-
-```
-# API Keys
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-GROQ_API_KEY=your_groq_key
-SERPER_API_KEY=your_serper_key
-TAVILY_API_KEY=your_tavily_key
-
-# Ollama Settings (for local models)
-OLLAMA_BASE_URL=http://localhost:11434
-```
 
 ## AWS Deployment Guide
 
