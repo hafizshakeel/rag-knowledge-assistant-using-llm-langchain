@@ -62,8 +62,8 @@ cd rag-knowledge-assistant-using-llm-langchain
 
 2. Create a virtual environment:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+conda env create -f chatbot.yml
+conda activate chatbot
 ```
 
 3. Install dependencies:
