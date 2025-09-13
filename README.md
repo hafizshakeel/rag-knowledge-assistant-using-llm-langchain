@@ -55,27 +55,36 @@ rag-knowledge-assistant
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/hafizshakeel/rag-knowledge-assistant-using-llm-langchain.git
 cd rag-knowledge-assistant-using-llm-langchain
 ```
 
-2. Create a virtual environment:
+2. **Option 1: Using Python venv**
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+3. **Option 2: Using Conda**
+
 ```bash
 conda env create -f chatbot.yml
 conda activate chatbot
 ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+> Using Conda with `chatbot.yml` installs **all required packages automatically**, so there is **no need** to run `pip install -r requirements.txt` in this case.
 
-4. Create a .env file with your API keys:
+4. Create a `.env` file with your API keys:
+
 ```bash
 cp .env.template .env
 # Edit .env with your API keys
 ```
+
 
 ### Running the Application
 
